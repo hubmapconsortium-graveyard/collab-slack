@@ -12,6 +12,7 @@ def help():
   print "Version: "+version
   print "  -t|token      Retrieve slack auth token here: https://api.slack.com/custom-integrations/legacy-tokens"
   print "  -c|channel    Omit '#' from slack channel name; e.g., #userneeds becomes userneeds"
+  print "                If channel == '', return all slack members"
   sys.exit(2)
 
 
@@ -21,7 +22,7 @@ import urllib2
 
 def main(argv):
   opt_slack_token = ''
-  opt_channel_nmae = ''
+  opt_channel_name = ''
   opt_print_real_name = False
   opt_print_id = False
   opt_print_email = False
@@ -43,8 +44,8 @@ def main(argv):
     elif opt in ("-e", "--email"):
       opt_print_email = True
 
-  if opt_slack_token == "" or opt_channel_name == "":
-    print "Error: both slack-auth-token and slack-channel-name are required"
+  if opt_slack_token == "":
+    print "Error: slack-auth-token is required"
     usage()
 
   members = urllib2.urlopen('https://slack.com/api/users.list?token='+opt_slack_token+'&pretty=1')
@@ -63,17 +64,20 @@ def main(argv):
         member_dict[member["id"]] = member_dict[member["id"]] + "<"+member["profile"]["email"]+">"+"\t"
   # xxx maybe strip the tab off after
 
-  channels = urllib2.urlopen('https://slack.com/api/conversations.list?token='+opt_slack_token+'&pretty=1')
-  channels_data = json.load(channels)
-  channels_obj = channels_data["channels"]
-  for channel in channels_obj:
-    if channel["name"] == opt_channel_name:
-      memberids = urllib2.urlopen('https://slack.com/api/channels.info?token='+opt_slack_token+'&channel='+channel["id"]+'&pretty=1')
-      memberids_data = json.load(memberids)
-      memberids_obj = memberids_data["channel"]["members"]
-      for memberid in memberids_obj:
-        print member_dict[memberid]
-
+  if opt_channel_name == "":
+    for memberid in member_dict:
+      print member_dict[memberid]
+  else:
+    channels = urllib2.urlopen('https://slack.com/api/conversations.list?token='+opt_slack_token+'&pretty=1')
+    channels_data = json.load(channels)
+    channels_obj = channels_data["channels"]
+    for channel in channels_obj:
+      if channel["name"] == opt_channel_name:
+        memberids = urllib2.urlopen('https://slack.com/api/channels.info?token='+opt_slack_token+'&channel='+channel["id"]+'&pretty=1')
+        memberids_data = json.load(memberids)
+        memberids_obj = memberids_data["channel"]["members"]
+        for memberid in memberids_obj:
+          print member_dict[memberid]
 
 if __name__ == "__main__":
   main(sys.argv[1:])
