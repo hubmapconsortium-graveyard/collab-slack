@@ -1,12 +1,15 @@
-# 
-
+# License: Apache 2.0
+# author: Kimberly Robasky (github:krobasky)
+# copyright 2018 HuBMAP Consortium
 usage_string='channelMembers.py -t <slack-auth-token> -c <slack-channel-name> [--email|--id|--real_name]'
+version="v1.0"
 
 def usage():
   print usage_string
   sys.exit(2)
 def help():
   print usage_string
+  print "Version: "+version
   print "  -t|token      Retrieve slack auth token here: https://api.slack.com/custom-integrations/legacy-tokens"
   print "  -c|channel    Omit '#' from slack channel name; e.g., #userneeds becomes userneeds"
   sys.exit(2)
